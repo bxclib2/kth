@@ -1,0 +1,16 @@
+all:  compile
+
+idx: generateIndexes generatePrefixFile
+
+generateIndexes: compile
+	./tokenizer < korpus | sort > index
+	java IndexBinary
+	rm index
+
+generatePrefixFile:
+	java GeneratePrefixFile
+
+compile:
+	javac GeneratePrefixFile.java Prefix.java IndexBinary.java
+clean:
+	rm *.class

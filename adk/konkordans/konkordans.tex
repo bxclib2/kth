@@ -1,0 +1,111 @@
+\documentclass[11pt]{exam}
+\usepackage{listings}
+\usepackage[swedish]{babel}
+\usepackage[T1]{fontenc} 
+\usepackage[utf8]{inputenc} 
+\usepackage{lscape}
+%\setlength{\textwidth}{16cm}
+%\setlength{\oddsidemargin}{0cm}
+%\setlength{\textheight}{25cm}
+%\setlength{\topmargin}{-2cm}
+
+%
+%  Created by hwaxxer on 2009-02-04.
+%  Copyright (c) 2009 __MyCompanyName__. All rights reserved.
+%
+%
+
+% This is now the recommended way for checking for PDFLaTeX:
+\usepackage{ifpdf}
+
+%\newif\ifpdf
+%\ifx\pdfoutput\undefined
+%\pdffalse % we are not running PDFLaTeX
+%\else
+%\pdfoutput=1 % we are running PDFLaTeX
+%\pdftrue
+%\fi
+
+\ifpdf
+\usepackage{subfigure}
+\usepackage[pdftex]{graphicx}
+\else
+\usepackage{graphicx}
+\fi
+
+%
+%  Update these values for running headers
+%
+\firstpageheader{\bf\Large }{\bf\Large ADK - Konkordans: teoriuppgifter}{\bf\Large 2009-02-04 }
+\runningheader{ADK - Konkordans: teoriuppgifter}{}{Martin Hwasser}
+\addpoints
+
+\begin{document}
+
+% setup standard options for the including code fragments
+\lstset{language=Python,numbers=left}
+
+\vspace{0.1in} 
+\hbox to \textwidth{Name:\enspace\hrulefill} 
+
+% Questions start here:
+\begin{questions}
+
+\question 
+\begin{parts}
+\part
+\textbf{Bör positionerna lagras som text eller binärt?}
+
+Med avseende på storleken på indexinformationen kan man avväga för- och nackdelar. Om positionerna blir relativt stora kommer man spara plats på att lagra dem binärt. Filen var ca: 20MB stor. Ett tecken kräver 8 bitar, eller en byte, och vi behöver 8 bytes för att skriva 20 000 000. Att uttrycka 20M binärt kräver endast 4 bytes, som får plats i en 32-bitars int. Däremot blir det krångligare att hantera indexinformationen och felsöka om den lagras binärt, och med tanke på storleken på moderna diskar är lagringsutrymme kanske inte att prioritera.
+
+\part
+\textbf{Bör indexinformationen lagras tillsammans med själva ordet eller på ett separat ställe?}
+
+Om man lagrar indexinformationen tillsammans med orden så underlättar man hanteringen. Dessutom slipper man att söka efter indexinformationen annorstädes. 
+
+\end{parts}
+\end{questions}
+
+\begin{landscape}
+	\begin{center}
+    \begin{tabular}{|| l | p{4cm} | p{4cm} | p{5cm} | p{4cm} | p{4cm} |}
+    \hline
+	\centering \textbf{Datastruktur} & \textbf{Snabbhet} & \textbf{Utrymme skivminne} & 	\textbf{Utrymme primärminne} & \textbf{Enkelhet} \\ \hline \hline
+    \textbf{Binärt sökträd}
+	& Sökning är effektivt om trädet är sorterat, O(log n). Blir långsamt om trädet är högt 
+	& Ganska stort eftersom vi måste ha pekare vid varje nod till barnen.
+	& Eftersom sökningen ska utföras på skivminnet, kommer ingen väsentlig mängd primärminne användas	
+	& Jobbigt att balansera trädet. Borde inte vara så svår att konstruera dock.
+	\\ \hline
+	\textbf{Sorterad Array}
+	& Sökning är effektivt med binärsökning, tidskomplexiteten O(log n).  
+	& Tar ytterst lite plats eftersom vi inte behöver spara mer information än ordet och dess index.
+	& Eftersom sökningen ska utföras på sknetivmin, kommer ingen väsentlig mängd primärminne användas	
+	& Enkelt att generera och lagra på fil. I princip en lista med ord och index.
+	\\ \hline
+	\textbf{Hashtabell}
+	& Om hashfunktionen är bra får vi en mycket effektiv sökning, tidskomplexitet O(1). Däremot kommer det ta tid att läsa in hashtabellen i minnet.
+	& Tar ungefär lika mycket skivutrymme som en sorterad array, här med ett hashvärde i stället för index.
+	& Eftersom sökningen ska utföras på skivminnet, kommer ingen väsentlig mängd primärminne användas
+	& Tar tid att generera. Borde inte vara svårt att lagra. Kan bli komplicerat om man skriver hashfunktionen. 
+	\\ \hline
+	\textbf{Trie}
+	& Borde vara ineffektiv eftersom det blir många sökningar på varje bokstav. Att hitta en nyckel har tidskomplexiteten O(n), där n är längden på ordet.
+	& Torde bli stor eftersom vi lagrar alla bokstäver i ett ord för sig.
+	& Eftersom sökningen ska utföras på filen, kommer ingen väsentlig mängd primärminne användas.	
+	& Blir knepig att lagra med alla bokstäver och pekare.
+	\\    \hline
+	\textbf{Latmanshashning}
+	& Vi söker på konstant tid fram ett index som är en del av ordet vi söker. Därefter utför vi binärsökning på en mycket liten delmängd av alla ord.
+	& Tar ungefär lika mycket skivutrymme som en sorterad array, här med ett hashvärde i stället för index.
+	& Se ovan, men man borde kunna läsa in prefixinformationen (aaa, aab osv) i minnet för att på konstant tid kunna ta reda på ett intervall mellan två prefix.	
+	& Tar tid att generera. Borde inte vara svårt att lagra. Kan bli komplicerat om man skriver hashfunktionen. 
+	\\ \hline
+    \end{tabular}
+
+\end{center}
+\end{landscape}
+
+
+\end{document}
+

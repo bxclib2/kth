@@ -1,0 +1,172 @@
+import java.util.*;
+import java.io.*;
+
+public class Reduce2Flow {
+
+	int nodes;
+	int edges;
+	int x;
+	int y;
+	int s;
+ 	int t;
+	private Kattio io;
+
+	public static void main(String[] args) {
+		new Reduce2Flow();
+	}
+	public Reduce2Flow() {
+		io = new Kattio(System.in, System.out);
+		reduce2flow();
+		reverse2match();
+
+	}
+
+	public  void reverse2match() {
+		removeSourceAndSink();
+	}
+	public  void removeSourceAndSink() {
+
+		io.println(x + " " + y);
+
+		io.readLine();//getString();
+		io.readLine();//getString();
+		int flowEdges = io.getInt();
+
+		String edge;
+		String[] split;
+		int j = 0;
+		String[] toPrint = new String[flowEdges];
+		try {
+			for(int i = 0; i < flowEdges; i++) {
+				edge = io.readLine();
+				edge = edge.substring(0, edge.length() - 2);
+
+				split = edge.split(" ");
+				if ((parse(split[0]) == s) || (parse(split[0]) == t) || 
+					(parse(split[1]) == s) || (parse(split[1]) == t)) {
+
+				} else {
+					toPrint[j] = edge;
+					j++;
+				}
+
+			}
+			io.println(j);
+			for(int i = 0; i < j; i++) {
+				io.println(toPrint[i]);
+			}
+
+		} catch (IndexOutOfBoundsException e) {}
+
+	}
+	public  void reduce2flow() {
+		numberOfNodes();
+		sourceAndSink();
+		io.flush();
+		
+		printEdges();
+		io.flush();
+		
+	}
+	public  void numberOfNodes() {
+		x = io.getInt();
+		y = io.getInt();
+
+		nodes = x + y;
+		io.println(nodes + 2);	
+	}
+
+	public  void sourceAndSink() {
+		// source
+		s = nodes + 1;
+		// sink
+		t = nodes + 2;
+		io.println(s + " " + t);
+	}
+
+	public  void printEdges() {
+		edges = io.getInt();
+		int addedEdges = edges + nodes;
+		io.println(addedEdges);
+		// Start reading the edges
+		for(int i = 1; i <= x; i++) {
+			io.println(s + " " + i + " 1");
+		}
+		for(int i = 0; i < edges; i++) {
+			io.println(io.readLine() + " 1");
+		}
+		for(int i = x + 1; i <= nodes; i++) {
+			io.println(i + " " + t + " 1");
+		}
+
+	}
+
+	public  int parse(String s) {
+		try {
+			return Integer.parseInt(s);
+		} catch( NumberFormatException e) {
+			return -1;
+		}
+	}
+	private  class Kattio extends PrintWriter {
+	    public Kattio(InputStream i) {
+			super(new BufferedOutputStream(System.out));
+			r = new BufferedReader(new InputStreamReader(i));
+	    }
+	    public Kattio(InputStream i, OutputStream o) {
+			super(new BufferedOutputStream(o));
+			r = new BufferedReader(new InputStreamReader(i));
+	    }
+
+	    public  boolean hasMoreTokens() {
+			return peekToken() != null;
+	    }
+
+	    public  int getInt() {
+			return Integer.parseInt(nextToken());
+	    }
+
+	    public double getDouble() { 
+			return Double.parseDouble(nextToken());
+	    }
+
+	    public long getLong() {
+			return Long.parseLong(nextToken());
+	    }
+
+	    public String getWord() {
+			return nextToken();
+	    }
+
+		public String readLine() {
+			try {
+				return r.readLine();
+			} catch(IOException e) {}
+			return null;
+		}
+
+	    private  BufferedReader r;
+	    private  String line;
+	    private  StringTokenizer st;
+	    private  String token;
+
+	    private  String peekToken() {
+		if (token == null) 
+		    try {
+				while (st == null || !st.hasMoreTokens()) {
+			    	line = r.readLine();
+			    	if (line == null) return null;
+			    	st = new StringTokenizer(line);
+				}
+				token = st.nextToken();
+		    } catch (IOException e) { }
+			return token;
+	    }
+
+	    private  String nextToken() {
+			String ans = peekToken();
+			token = null;
+			return ans;
+	    }
+	}
+}

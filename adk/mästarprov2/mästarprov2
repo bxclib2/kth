@@ -1,0 +1,288 @@
+%
+%  untitled
+%
+%  Created by hwaxxer on 2009-04-07.
+%  Copyright (c) 2009 __MyCompanyName__. All rights reserved.
+%
+\documentclass[12pt, a4paper]{article}
+
+% Use utf-8 encoding for foreign characters
+\usepackage[utf8]{inputenc}
+
+% Setup for fullpage use
+\usepackage{fullpage}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage[swedish]{babel}
+% Uncomment some of the following if you use the features
+%
+% Running Headers and footers
+%\usepackage{fancyhdr}
+
+% Multipart figures
+%\usepackage{subfigure}
+
+% More symbols
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{latexsym}
+
+% Surround parts of graphics with box
+\usepackage{boxedminipage}
+
+% Package for including code in the document
+\usepackage{listings}
+
+% If you want to generate a toc for each chapter (use with book)
+\usepackage{minitoc}
+
+% This is now the recommended way for checking for PDFLaTeX:
+\usepackage{ifpdf}
+
+%\newif\ifpdf
+%\ifx\pdfoutput\undefined
+%\pdffalse % we are not running PDFLaTeX
+%\else
+%\pdfoutput=1 % we are running PDFLaTeX
+%\pdftrue
+%\fi
+
+\ifpdf
+\usepackage[pdftex]{graphicx}
+\else
+\usepackage{graphicx}
+\fi
+\title{ADK Mästarprov 2}
+\author{Martin Hwasser}
+
+\begin{document}
+
+\ifpdf
+\DeclareGraphicsExtensions{.pdf, .jpg, .tif}
+\else
+\DeclareGraphicsExtensions{.eps, .jpg}
+\fi
+
+\maketitle
+\newpage
+\begin{abstract}
+Rapporten utforskar ett \textit{stabilt matchningsproblem} utifrån en utilitaristiskt synpunkt, i den bemärkelsen att maximera den sammanlagda lyckan för så många parter som möjligt. Vi studerar Gale-Shapleys algoritm som används för att lösa problemet samt undersöker dess funktionalitet och komplexitet för att bekräfta dess validitet. 
+\end{abstract}
+\newpage
+\tableofcontents
+\newpage
+\section{Introduktion}
+Antag att $n$ kvinnor och $n$ män söker varsin danspartner av det andra könet. Antag också att de kvinnliga dansarna föredrar vissa manliga dansare framför andra, och att de manliga dansarna föredrar vissa kvinnliga dansare framför andra. I prioriteringen av danspartner vägs inte bara skicklighet in, så olika kvinnor kan föredra olika män, och vice versa. Problemet vi ställs inför är nu att på lämpligast sätt para ihop de olika dansarna, så att inget nytt parbyte kommer resultera i att båda parter blir lyckligare. En sådan \textit{matchning} anses vara \textit{stabil} \cite{galeshapley}.
+
+Att finna en stabil matchning är i grunden ett matematiskt problem, i detta fall tillämpat på kvinnor och män som behöver en danspartner. Problemformuleringen är tilltalande i sin enkelhet, och kan appliceras på andra \textit{en-till-en}-relationer, såsom giftermål, eller placering av en bordsdam och hennes bordskavaljer. 
+
+Nivån på rapporten är anpassad för att vara begriplig för gymnasieelever som läst matematikkurser motsvarande de som läses sista året på naturvetenskaplig linje. Mer avancerade begrepp och notationer förklaras på en hög och relativt trivial nivå. 
+
+\section{Problembeskrivning}
+\subsection{Matchning och tabellrepresentering}
+\label{sec:match}
+Låt $K$ och $M$ vara två ändliga mängder av $n$ personer, där $K$ är mängden kvinnor $K_1, K_2, .., K_n$ och $M$ är mängden män $m_1, m_2, .., m_n$ (kvinnor representeras med stora bokstäver och männen med små för tydlighet). För alla dessa kvinnor och män vill vi nu hitta den lämpligaste danspartnern.
+
+En matchning av dessa två mängder är en $bijektion$ mellan $K$ och $M$, det vill säga: en matchning innebär att varje dansare har en partner, och totalt kommer det finnas $n$ stycken par, eftersom vi har $n$ kvinnor och $n$ män. Vi beskriver en matchning på formen $(K_1m_1, .., K_nm_n)$. Om vi har två par, säg $A$ och $a$, samt $B$ och $b$, så skriver vi alltså denna matchning $(Aa, Bb)$. En \textit{permutation} av denna matchning är en annan kombination av par, t.ex. $(Ab, Ba)$.
+
+En matchning sägs vara $instabil$ om en kvinna $K$, och en man $m$, föredrar att dansa med varandra även fast de redan har en danspartner \cite{galeshapley}. Vi representerar dansarna och deras preferenser som listor sorterade i sjunkande preferensordning. Betrakta följande tabell:
+\newline
+\begin{table}[h]
+	\caption{Exempel 1 med 4 dansare}
+\begin{center}
+	\begin{tabular}{c | ccc c | ccc}
+	\hline \hline
+	Kvinna & \multicolumn{3}{c}{Prioritetsordning} & \hspace{1 cm}  Man & \multicolumn{3}{c}{Prioritetsordning}\\
+	\hline
+	A 			& a & b &   &\hspace{1 cm} a	& A & B \\
+	B           & b & a &	&\hspace{1 cm} b 	& B & A \\
+	\end{tabular}
+	\newline\newline
+\end{center}
+\end{table}
+
+Tabellen beskriver följande:
+
+\begin{itemize}
+ 	\item A föredrar a framför b
+	\item B föredrar b framför a
+ 	\item a föredrar A framför B
+	\item b föredrar B framför A
+\end{itemize}
+
+\subsection{Stabil matchning och exempel}
+Säg nu att vi har en matchning med två par, $(Ab, Ba)$, från \textbf{Tabell 1} i sektion \ref{sec:match}. Denna matchning är instabil, ty om $A$ i stället får dansa med $a$, och $B$ får dansa med $b$ så blir båda paren lyckligare. Denna permutation av par, $(Aa, Bb)$, är per definition en $stabil$ matchning eftersom inget nytt byte skulle göra båda parter nöjdare. Vi konstaterar:
+
+
+\begin{quote}
+	\begin{em}
+		En matchning är stabil \textbf{om och endast om} det inte finns en kvinna och en man i denna matchning som föredrar varandra framför sina nuvarande partners. \cite{roth}
+	\end{em}
+\end{quote}
+
+
+Låt oss undersöka ett annat exempel:
+Betrakta 3 kvinnor och 3 män representerade av mängderna \{A, B, C\} respektive \{a, b, c\}.
+
+\begin{table}[h]
+	\caption{Exempel 2 med 6 dansare}
+\begin{center}	
+	\begin{tabular}{c | cccc c | cccc}
+	\hline \hline
+	Kvinna & \multicolumn{4}{c}{Prioritetsordning} & \hspace{1 cm}  Man & \multicolumn{4}{c}{Prioritetsordning}\\
+	\hline
+	A 			& c & b & a &   &\hspace{1 cm} a	& C & B & A \\
+	B           & c & a & b &	&\hspace{1 cm} b 	& B & C & A \\
+	C           & a & c & b &	&\hspace{1 cm} c 	& A & B & C \\
+	\end{tabular}
+\end{center}
+\end{table}
+
+Betrakta den godtyckliga matchningen $(Aa, Bb, Cc)$. Den är instabil, ty $C$ föredrar $a$ framför $c$, och $a$ föredrar $C$ framför $A$, vilket leder oss till permutationen $(Ac, Bb, Ca)$. En sådan matchning är faktiskt stabil, ty inget parbyte kommer göra båda parter nöjdare. För att bekräfta detta kan vi undersöka permutationen:
+
+\begin{itemize}
+ 	\item $A$ har sitt förstahandsval
+ 	\item $B$ föredrar $c$ och $a$ framför $b$
+ 	\item $C$ har sitt förstahandsval
+	\item $a$ har sitt förstahandsval
+	\item $b$ har sitt förstahandsval
+	\item $c$ har sitt förstahandsval
+\end{itemize}
+
+Vi kan alltså inte förbättra situationen för $A$, $C$, $a$, $b$ eller $c$. Det finns alltså bara en missnöjd dansare, $B$, och vi kan därför konstatera att matchningen enligt definition är stabil, ty ett byte kommer resultera i missnöje för alla utom just $B$.
+
+\subsection{Preferensdominans}
+I \underline{Exempel 2} brydde vi oss ej om vems preferenser som bör prioriteras. Antag att vi vill hitta endast en stabil matchning. Då kommer vi behöva avgöra huruvida vi ska prioritera kvinnornas eller männens preferenser. För att illustrera denna komplikation kan vi studera vad som händer om alla kvinnor är hopplöst parade med den mannen som de allra minst föredrar, och alla män är parade med den kvinnan som de föredrar mest. Matchningen är inte optimal utifrån kvinnornas perspektiv, eftersom alla kvinnor blir nöjda med ett partnerbyte. Vi måste alltså avväga vems preferenser som väger tyngst - kvinnans eller mannens? 
+
+
+Denna rapport följer devisen \textit{damerna först}: Kvinnorna frågar i tur och ordning männen enligt sina preferenslistor. Om en man då redan har en partner som han föredrar framför denna kvinna så tackar han artigt nej, och kvinnan får fråga vidare. I annat fall byter han partner. 
+\newpage
+
+\section{Algoritm för stabil matchning}
+Vi kan specificera tillvägagångssätt från \textbf{Tabell 3} med en algoritm \cite{galeshapley}. Algoritmen itererar igenom de kvinnliga dansarna och deras preferenslistor samt parar ihop dem med den mest lämpliga mannen, genom att låta kvinnorna bjuda upp männen till dans. Detta gör vår algoritm \textit{optimal för kvinnor}, eftersom när alla dansare har fått sin partner, så har kvinnorna fått sin optimala kavaljer \cite{mairson}.
+\newline
+\label{sec:alg}
+
+$n:$ antalet män = antalet kvinnor
+
+$p:$ antalet danspar
+
+$K:$ kvinnlig dansare
+
+$m:$ manlig dansare
+
+\begin{algorithm}
+	\caption{Gale-Shapleys algoritm för stabil matchning}
+	\label{alg}
+	\begin{algorithmic}
+		\STATE $p \leftarrow 0$ \COMMENT{Det finns inga danspar än}
+		\WHILE[Så länge vi inte har $n$ stycken par]{$p < n$}
+			\STATE $K \leftarrow$ Kvinna nr $(k + 1)$
+			\WHILE{$K$:s preferenslista inte är tom}
+				\STATE $m \leftarrow$ Mannen som $K_{k+1}$ föredrar bäst
+				\IF{$m$ föredrar K framför hans partner}
+					\STATE $K$ och $m$ blir ett danspar
+					\STATE $K \leftarrow m$:s förra partner
+				\ENDIF
+				\IF{$K$ inte är $m$:s sista val}
+					\STATE Ta bort $m$ från $K$:s preferenslista
+				\ENDIF
+			\ENDWHILE
+			\STATE $p \leftarrow p + 1$
+		\ENDWHILE
+		\newline
+		\newline
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Algoritmbeskrivning}
+Vi börjar med att sätta $p$ till $0$, ty än finns inga danspar. Sedan bjuder den första kvinnan upp den mannen som hon föredrar bäst såvida han inte redan har en partner som han föredrar bättre. Om mannen byter partner börjar vi om för kvinnan som han lämnade. Därefter tar vi bort mannen från den lämnade kvinnans preferenslista. Vi fortsätter på detta vis så länge det finns kvinnor kvar och deras preferenslistor inte är tomma. För varje iteration har vi hittat ett nytt par, så vi ökar $p$ med 1.
+
+Så fort vi har $n$ danspar så har vi en stabil matchning. Vi vet detta eftersom inget byte då skulle göra någon kvinnlig dansare lyckligare - de har ju fått välja sina partners i preferensordning. Detta sagt är det inte säkert att ett byte inte skulle göra en manlig dansare lyckligare, men kravet för vår stabila matchning är just att inget byte skulle göra båda parter lyckligare.
+
+\newpage
+\subsection{Algoritmen i detalj}
+Betrakta fyra kvinnor, \{A,B,C,D\}, och fyra män, \{a,b,c,d\}, med preferenser angivna enligt \textbf{Tabell 3}:
+\begin{table}[ht]
+	\caption{Exempel 3 med 8 dansare}
+	\begin{center}
+		\begin{tabular}{c | ccccc c | ccccc}
+		\hline \hline
+		Kvinna & \multicolumn{5}{c}{Prioritetsordning} & \hspace{1 cm}  Man & \multicolumn{5}{c}{Prioritetsordning} \\
+		\hline
+		A 			& a & b & c & d &	&\hspace{1 cm} a	& C & D & A & B \\
+		B           & c & a & b & d	&	&\hspace{1 cm} b 	& B & C & D & A \\
+		C           & a & c & d & b	&	&\hspace{1 cm} c 	& A & B & C & D \\
+		D			& b & d & a & c	&	&\hspace{1 cm} d	& D & B & C & A \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
+Vi följer algoritmen:
+
+Vi ansätter först $p$ till $0$. Sedan låter vi $K$ vara kvinna $A$, och $K$ frågar alltså man $a$, eftersom denne är först på preferenslistan. Eftersom $a$ inte har någon partner än tackar denne ja. Vi har nu ett par och ökar $p$ med 1. Vi börjar om och låter $K$ vara kvinna $B$. Denna frågar man $c$ och denne tackar ja. Antalet par, $p$, är nu 2. Kvinna $C$ frågar man $a$ som redan har en partner, men $a$ föredrar $C$ framför $A$, och byter därför partner. $K$ är nu kvinna $A$ som blev lämnad, och vi tar bort $a$ från $K$:s preferenslista. Såhär långt har vi alltså följande två par: $(Bc, Ca)$.
+
+Kvinna $K$ som nu är ensam frågar då $b$, och denne tackar ja. Vi har nu tre par, dvs $p$ är 3. $K$ är nu kvinna $D$ som frågar man $b$, och eftersom $b$ föredrar $D$ framför $A$ byter denne partner. Vi tar bort $b$ från $A$:s preferenslista, och låter $K$ vara kvinna $A$. Denna frågar nu $c$ som redan har en partner, men föredrar $A$ framför $B$, och byter därför partner. Vi låter $K$ vara kvinna $B$, och tar bort $c$ från hennes preferenslista. $K$ frågar nu $a$, men denne tackar artigt nej ty han har redan sin drömpartner. $B$ frågar då $b$ som ivrigt tackar ja, och vi får $(Ac, Bb, Ca, Db)$. Eftersom $p$ är 4 så avslutas algoritmen.
+
+Eftersom vi på detta sätt har har låtit kvinnorna välja i prioritetsordning så måste denna matchning vara stabil, ty ingen av kvinnorna kan bli lyckligare än med sin nuvarande partner.
+
+\subsection{Algoritmanalys}
+
+För att bekräfta att algoritmen fungerar kan vi gå igenom ett par olika punkter som stämmer när algoritmen har kört färdigt.
+\newline\newline
+\textbf{(1)} \textit{Om K föredrar m framför sin partner, så betyder det att m föredrog någon annan.}
+\newline\newline
+Ty $K$ måste ha frågat $m$ innan hon frågade sin nuvarande partner.
+\newline\newline
+\textbf{(2)} \textit{Två dansare kan inte ha samma partner.}
+\newline\newline
+Ty dansarna byter partner om de får en förfrågan från någon de föredrar, och inga två dansare kan vara lika högt prioriterade i en preferenslista.
+\newline\newline
+\textbf{(3)} \textit{En manlig dansare får bara bättre partner genom algoritmens gång.}
+\newline\newline
+Ty om en kvinna frågar en man som föredrar sin nuvarande partner så tackar han artigt nej.
+\newline\newline
+\textbf{(4)} \textit{Kvinnornas preferenslistor kan aldrig vara tomma.}
+\newline\newline
+Vi konstaterar att (4) stämmer eftersom annars skulle en kvinna med tom preferenslista blivit avvisad av alla andra män (1). Då har varje man en partner (2)(3), vilket ger att det måste ha funnits mer än $n$ kvinnor, och det är absurt!
+\newline\newline
+\textbf{(5)} \textit{Den första matchningen vi finner är stabil.}
+\newline\newline
+Ty om kvinna $K$ föredrar $m$ mot sin partner, så betyder det att $m$ har avvisat henne (1) för någon kvinna han föredrar framför $K$ (3). 
+
+\subsection{Optimal matchning}
+
+Läsaren förstår att algoritmen resulterar i den \textit{mest optimala stabila matchningen för alla kvinnor}, i den bemärkelsen att inget nytt byte kommer göra någon kvinna gladare, eftersom det inte finns någon annan stabil matchning i vilken en kvinna $K$ föredrar en man $m$ som inte är hennes nuvarande partner. 
+
+\textit{Bevis:} Vi antar att vår algoritm \textit{inte} resulterar i den \textit{mest optimala stabila matchningen för alla kvinnor} och letar efter en motsägelse. 
+
+Betrakta den \textit{första iterationen} då en kvinna, $K$, blir avvisad av hennes optimala partner, man $M$. Då måste $M$ ha avvisat $K$ för en annan kvinna $L$ som han värderar högre. Eftersom detta är den första iterationen då en kvinna blir avvisad av hennes optimala partner, så måste $M$ vara $L$:s optimala partner, ty hon valde honom först. Och eftersom $M$ är $K$:s optimala partner så finns det någon stabil matchning, $S$, där $K$ är parad med $M$, och kvinna $L$ har en partner som inte är man $M$. I matchningen $S$ så föredrar dock man $M$ kvinna $L$ framför kvinna $K$ (eftersom han avvisade kvinna $K$ med vår algoritm), och kvinna $L$ föredrar mannen $M$ framför hennes partner i $S$, eftersom man $M$ är hennes optimala partner. Med vår definition av optimal matchning så kan kvinna $L$ alltså inte vara parad med någon bättre än man $M$, men detta är \textit{absurt}, ty kvinna $L$ och man $M$ föredrar varandra framför sina partners i $S$, och sålunda är matchningen inte stabil. Vi får en motsägelse och alltså resulterar algoritmen i den \textit{mest optimala stabila matchningen för alla kvinnor}. 
+
+
+Vi observerar också att algoritmen resulterar i den \textit{minst optimala stabila matchningen för alla män}, eftersom i varje stabil matchning så får männen samma eller en högre prioriterade kvinna än den kvinna som de tilldelades av algoritmen. Antag att $Aa$ är ett par i algoritmen, men att det existerar en annan stabil matchning där $Ab$ och $Ba$ är par, och $A$ föredrar $a$ framför $b$. Således måste $a$ föredra $B$ framför $A$, så $Aa$ kan inte vara den bästa matchningen för $a$.
+
+Självklart är det simpelt att skriva om algoritmen så att vi får \textit{optimal matchning} för alla män i stället, vilket vi gör genom att helt enkelt låta männen bjuda upp kvinnorna till dans.
+
+\subsection{Komplexitet}
+
+Vi har bevisat att det alltid finns en stabil matchning för problemet med Gale-Shapleys algoritm, och vi finner denna när vi har fått $n$ stycken par. Algoritmen kommer som mest para ihop $n^2$ dansare, eftersom vi för alla $n$ kvinnor i värsta fall kommer iterera igenom alla $n$ män i deras preferenslistor. Vi betecknar denna tidskomplexitet med \textit{Big O}-notationen $O(n^2)$ - en övre gräns som lätt förenklat betyder att algoritmen åtminstone aldrig kommer att göra fler än $n^2$ matchningar. Detta sker när vi för varje kvinna måste iterera igenom hela hennes preferenslista. 
+På samma vis kan vi också sätta en undre gräns. Som minst behöver algoritmen $n$ iterationer för att hitta $n$ par, vilket sker när alla kvinnor får sina förstahandsval. Detta betecknar vi med \textit{Big Omega}-notationen \textit{$\Omega(n)$}.
+
+\section{Slutsats}
+
+Det finns alltså alltid en stabil matchning för problem av denna typ och att finna den är ytterst trivialt med Gale-Shapleys algoritm. För alla liknande problem med \textit{en-till-en}-relationer så fungerar detta tillvägagångssätt för att på utilitaristiskt vis maximera lyckan hos alla deltagare, men kanske framförallt för att minimera missnöjet för alla par.
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{}
+\begin{thebibliography}{0}
+
+    \bibitem{galeshapley}D. Gale \& L. S. Shapley. College admissions and the stability of marriage, {\it The American Mathematical Monthly}, 1962.
+
+	\bibitem{roth}A. E. Roth \& M. Sotomayor. Two-Sided Matching: a study in Game-Theoretic Modeling and Analysis, {\it Econometric Society Monograph Series}, 1990.
+	
+	\bibitem{mairson}H. Mairson. The Stable Marriage Problem, {\it The Brandeis Review}, 1992.
+
+   \end{thebibliography}
+
+\end{document}
