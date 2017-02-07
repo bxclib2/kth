@@ -1,0 +1,18 @@
+graduate program math mathematics courses 
+
+Computer_Science.f 2
+ECE_Course_Reviews.f 1
+Economics.f 1
+Mathematics.f 3
+MattHh.f 1
+Private_Tutoring.f 1
+Statistics.f 3
+
+
+Optimal:
+
+graduate program math mathematics courses degree
+
+
+precision = 100%
+recall = 7%
