@@ -10,6 +10,7 @@ package ir;
 
 import javafx.geometry.Pos;
 
+import java.util.Collections;
 import java.util.ListIterator;
 import java.util.LinkedList;
 import java.io.Serializable;
@@ -49,6 +50,10 @@ public class PostingsList implements Serializable, Comparable<PostingsList> {
 
     public String getWord() {
         return this.word;
+    }
+
+    public void addEntry(PostingsEntry e) {
+        list.add(e);
     }
 
     public void addEntry(int docID, int offset) {
@@ -99,13 +104,8 @@ public class PostingsList implements Serializable, Comparable<PostingsList> {
         return this.word.compareTo(other.getWord());
     }
 
-    public void print() {
-        for (int i = 0; i < size(); i++) {
-            System.err.println("entry doc ID; " + get(i).docID);
-            for (int offset : get(i).getOffsets()) {
-                System.err.println("" + offset);
-            }
-        }
+    public void sortByScore() {
+        Collections.sort(list);
     }
 }
 	

@@ -46,6 +46,10 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
     public LinkedList<Integer> getOffsets() {
         return offsets;
     }
+
+    public int getFrequency() {
+        return getOffsets().size();
+    }
 }
 
     

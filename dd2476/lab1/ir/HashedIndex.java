@@ -11,6 +11,7 @@
 package ir;
 
 import java.util.*;
+import java.lang.Math;
 
 /**
  *   Implements an inverted index as a Hashtable from words to PostingsLists.
@@ -24,6 +25,10 @@ public class HashedIndex implements Index {
 
     private SPIMInvert spimi;
     private boolean shouldIndex = false;
+
+    private HashMap<Integer, Integer> docLengths = new HashMap();
+
+    private RankedQuery rankedQuery;
 
     public HashedIndex() {
         this.spimi = SPIMInvert.load();
@@ -39,16 +44,28 @@ public class HashedIndex implements Index {
      *  Inserts this token in the index.
      */
     public void insert( String token, int docID, int offset ) {
+        if (token.equals("welleducated")) {
+            System.err.println("docid: " + docID);
+        }
+        if (token.equals("demographically")) {
+            System.err.println("okkkkk: " + docID);
+        }
         if (shouldIndex) {
-            //this.spimi.addToBlock(token, docID, offset);
+            this.spimi.addToBlock(token, docID, offset);
         }
 
-        PostingsList pl = getPostings(token);
-        if (pl == null) {
-            pl = new PostingsList();
-            index.put(token, pl);
+        Integer length = 0;
+        if (docLengths.containsKey(docID)) {
+            length = docLengths.get(docID);
         }
-        pl.addEntry(docID, offset);
+        docLengths.put(docID, length + 1);
+
+        //PostingsList pl = getPostings(token);
+        //if (pl == null) {
+        //    pl = new PostingsList();
+        //    index.put(token, pl);
+        //}
+        //pl.addEntry(docID, offset);
     }
 
 
@@ -65,8 +82,8 @@ public class HashedIndex implements Index {
      *  if the term is not in the index.
      */
     public PostingsList getPostings( String token ) {
-        return this.index.get(token);
-        //return spimi.getPostings(token);
+        //return this.index.get(token);
+        return spimi.getPostings(token);
     }
 
 
@@ -80,6 +97,8 @@ public class HashedIndex implements Index {
                 return intersectionQuery(query, rankingType, structureType);
             case PHRASE_QUERY:
                 return positionalIntersectionQuery(query);
+            case RANKED_QUERY:
+                return rankedQuery.search(query, rankingType);
         }
 
         return null;
@@ -280,5 +299,6 @@ public class HashedIndex implements Index {
                 e.printStackTrace();
             }
         }
+        this.rankedQuery = new RankedQuery(spimi, docIDs, docLengths);
     }
 }
