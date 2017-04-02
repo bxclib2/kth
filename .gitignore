@@ -95,3 +95,6 @@ dd2476/lab1/index
 dd2476/lab1/cache
 
 *.class
+
+# JetBrains
+.idea
